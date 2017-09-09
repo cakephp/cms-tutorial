@@ -43,6 +43,17 @@ use Cake\Routing\Route\DashedRoute;
  */
 Router::defaultRouteClass(DashedRoute::class);
 
+// New route we're adding for our tagged action.
+// The trailing `*` tells CakePHP that this action has
+// passed parameters.
+Router::scope(
+    '/articles',
+    ['controller' => 'Articles'],
+    function ($routes) {
+        $routes->connect('/tagged/*', ['action' => 'tags']);
+    }
+);
+
 Router::scope('/', function (RouteBuilder $routes) {
     /**
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
