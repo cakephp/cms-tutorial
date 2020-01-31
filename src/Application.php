@@ -14,6 +14,16 @@
  */
 namespace App;
 
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Authorization\AuthorizationService;
+use Authorization\AuthorizationServiceInterface;
+use Authorization\AuthorizationServiceProviderInterface;
+use Authorization\Middleware\AuthorizationMiddleware;
+use Authorization\Policy\OrmResolver;
+use Psr\Http\Message\ServerRequestInterface;
 use Cake\Core\Configure;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\BaseApplication;
@@ -27,7 +37,56 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  * want to use in your application.
  */
 class Application extends BaseApplication
+    implements AuthenticationServiceProviderInterface,
+    AuthorizationServiceProviderInterface
 {
+    /**
+     * Load all the application configuration and bootstrap logic.
+     *
+     * @return void
+     */
+    public function bootstrap(): void
+    {
+        // Call parent to load bootstrap from files.
+        parent::bootstrap();
+
+        if (PHP_SAPI === 'cli') {
+            $this->bootstrapCli();
+        }
+
+        /*
+         * Only try to load DebugKit in development mode
+         * Debug Kit should not be installed on a production system
+         */
+        if (Configure::read('debug')) {
+            $this->addPlugin('DebugKit');
+        }
+        $this->addPlugin('Authentication');
+        $this->addPlugin('Authorization');
+
+        // Load more plugins here
+    }
+
+    /**
+     * Bootrapping for CLI application.
+     *
+     * That is when running commands.
+     *
+     * @return void
+     */
+    protected function bootstrapCli(): void
+    {
+        try {
+            $this->addPlugin('Bake');
+        } catch (MissingPluginException $e) {
+            // Do not halt if the plugin is missing
+        }
+
+        $this->addPlugin('Migrations');
+
+        // Load more plugins here
+    }
+
     /**
      * Setup the middleware queue your application will use.
      *
@@ -48,14 +107,15 @@ class Application extends BaseApplication
             ->add(new RoutingMiddleware($this))
 
             // add Authentication after RoutingMiddleware
-            ->add(new \Authentication\Middleware\AuthenticationMiddleware($this->configAuth()));
+            ->add(new AuthenticationMiddleware($this))
 
-        return $middlewareQueue;
+            // Add authorization **after** authentication
+            ->add(new AuthorizationMiddleware($this));
 
         return $middlewareQueue;
     }
 
-    protected function configAuth(): AuthenticationService
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
     {
         $authenticationService = new AuthenticationService([
             'unauthenticatedRedirect' => '/users/login',
@@ -82,5 +142,12 @@ class Application extends BaseApplication
         ]);
 
         return $authenticationService;
+    }
+
+    public function getAuthorizationService(ServerRequestInterface $request): AuthorizationServiceInterface
+    {
+        $resolver = new OrmResolver();
+
+        return new AuthorizationService($resolver);
     }
 }
