@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -18,13 +20,12 @@ use Cake\View\View;
 /**
  * Application View
  *
- * Your application’s default view class
+ * Your application's default view class
  *
- * @link https://book.cakephp.org/3.0/en/views.html#the-app-view
+ * @link https://book.cakephp.org/4/en/views.html#the-app-view
  */
 class AppView extends View
 {
-
     /**
      * Initialization hook method.
      *
@@ -34,7 +35,7 @@ class AppView extends View
      *
      * @return void
      */
-    public function initialize()
+    public function initialize(): void
     {
     }
 }
