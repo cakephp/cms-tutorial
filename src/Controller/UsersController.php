@@ -40,11 +40,10 @@ class UsersController extends AppController
         $result = $this->Authentication->getResult();
         // regardless of POST or GET, redirect if user is logged in
         if ($result->isValid()) {
-            // redirect to /pages/home after login success
+            // redirect to /articles after login success
             $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Pages',
-                'action' => 'display',
-                'home',
+                'controller' => 'Articles',
+                'action' => 'index',
             ]);
 
             return $this->redirect($redirect);
@@ -93,13 +92,13 @@ class UsersController extends AppController
     {
         $this->Authorization->skipAuthorization();
 
-        $user = $this->Users->newEntity();
+        $user = $this->Users->newEmptyEntity();
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect(['action' => 'login']);
             }
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
