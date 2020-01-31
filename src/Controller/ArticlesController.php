@@ -8,7 +8,7 @@ use App\Controller\AppController;
 class ArticlesController extends AppController
 {
 
-    public function initialize()
+    public function initialize(): void
     {
         parent::initialize();
 
