@@ -15,7 +15,7 @@
 namespace App\Controller;
 
 use Cake\Controller\Controller;
-use Cake\Event\Event;
+use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -42,51 +42,15 @@ class AppController extends Controller
         parent::initialize();
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
-
-        $this->loadComponent('Auth', [
-            'authorize'=> 'Controller',
-            'authenticate' => [
-                'Form' => [
-                    'fields' => [
-                        'username' => 'email',
-                        'password' => 'password'
-                    ]
-                ]
-            ],
-            'loginAction' => [
-                'controller' => 'Users',
-                'action' => 'login'
-            ],
-             // If unauthorized, return them to page they were just on
-            'unauthorizedRedirect' => $this->referer()
-        ]);
-
-        // Allow the display action so our PagesController
-        // continues to work. Also enable the read only actions.
-        $this->Auth->allow(['display', 'view', 'index']);
+        $this->loadComponent('Authorization.Authorization');
+        $this->loadComponent('Authentication.Authentication');
     }
 
-    /**
-     * Before render callback.
-     *
-     * @param \Cake\Event\Event $event The beforeRender event.
-     * @return \Cake\Http\Response|null|void
-     */
-    public function beforeRender(\Cake\Event\EventInterface $event)
+    public function beforeFilter(EventInterface $event)
     {
-        // Note: These defaults are just to get started quickly with development
-        // and should not be used in production. You should instead set "_serialize"
-        // in each action as required.
-        if (!array_key_exists('_serialize', $this->viewVars) &&
-            in_array($this->response->type(), ['application/json', 'application/xml'])
-        ) {
-            $this->set('_serialize', true);
-        }
-    }
-
-    public function isAuthorized($user)
-    {
-        // By default deny access.
-        return false;
+        parent::beforeFilter($event);
+        // for all controllers in our application, make index and view
+        // actions public, skipping the authentication check
+        $this->Authentication->addUnauthenticatedActions(['index', 'view']);
     }
 }

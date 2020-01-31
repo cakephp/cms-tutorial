@@ -18,7 +18,7 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
-use Cake\Core\Plugin;
+use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router;
 use Cake\Routing\Route\DashedRoute;
@@ -43,51 +43,25 @@ use Cake\Routing\Route\DashedRoute;
  */
 Router::defaultRouteClass(DashedRoute::class);
 
-// New route we're adding for our tagged action.
-// The trailing `*` tells CakePHP that this action has
-// passed parameters.
-Router::scope(
-    '/articles',
-    ['controller' => 'Articles'],
-    function ($routes) {
-        $routes->connect('/tagged/*', ['action' => 'tags']);
-    }
-);
-
 Router::scope('/', function (RouteBuilder $routes) {
-    /**
-     * Here, we are connecting '/' (base path) to a controller called 'Pages',
-     * its action called 'display', and we pass a param to select the view file
-     * to use (in this case, src/Template/Pages/home.ctp)...
-     */
+    // Register scoped middleware for in scopes.
+    $routes->registerMiddleware('csrf', new CsrfProtectionMiddleware([
+        'httpOnly' => true
+    ]));
+    $routes->applyMiddleware('csrf');
     $routes->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
-
-    /**
-     * ...and connect the rest of 'Pages' controller's URLs.
-     */
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+
+
+    // New route we're adding for our tagged action.
+    // The trailing `*` tells CakePHP that this action has
+    // passed parameters.
+    $routes->scope('/articles', function ($routes) {
+        $routes->connect('/tagged/*', ['controller' => 'Articles', 'action' => 'tags']);
+    });
 
     /**
      * Connect catchall routes for all controllers.
-     *
-     * Using the argument `DashedRoute`, the `fallbacks` method is a shortcut for
-     *    `$routes->connect('/:controller', ['action' => 'index'], ['routeClass' => 'DashedRoute']);`
-     *    `$routes->connect('/:controller/:action/*', [], ['routeClass' => 'DashedRoute']);`
-     *
-     * Any route class can be used with this method, such as:
-     * - DashedRoute
-     * - InflectedRoute
-     * - Route
-     * - Or your own route class
-     *
-     * You can remove these routes once you've connected the
-     * routes you want in your application.
      */
     $routes->fallbacks(DashedRoute::class);
 });
-
-/**
- * Load all plugin routes. See the Plugin documentation on
- * how to customize the loading of plugin routes.
- */
-Plugin::routes();

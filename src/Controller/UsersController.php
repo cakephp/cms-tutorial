@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Event\EventInterface;
 
 /**
  * Users Controller
@@ -12,10 +13,11 @@ use App\Controller\AppController;
  */
 class UsersController extends AppController
 {
-    public function initialize(): void
+    public function beforeFilter(EventInterface $event)
     {
-        parent::initialize();
-        $this->Auth->allow(['logout', 'add']);
+        parent::beforeFilter($event);
+        // Allow login and add
+        $this->Authentication->addUnauthenticatedActions(['login', 'add']);
     }
 
     /**
@@ -31,22 +33,34 @@ class UsersController extends AppController
         $this->set('_serialize', ['users']);
     }
 
-    public function login()
-    {
-        if ($this->request->is('post')) {
-            $user = $this->Auth->identify();
-            if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect($this->Auth->redirectUrl());
-            }
-            $this->Flash->error('Your username or password is incorrect.');
+    public function login() {
+        $this->request->allowMethod(['get', 'post']);
+        $result = $this->Authentication->getResult();
+        // regardless of POST or GET, redirect if user is logged in
+        if ($result->isValid()) {
+            // redirect to /pages/home after login success
+            $redirect = $this->request->getQuery('redirect', [
+                'controller' => 'Pages',
+                'action' => 'display',
+                'home',
+            ]);
+
+            return $this->redirect($redirect);
+        }
+        // display error if user submitted and authentication failed
+        if ($this->request->is('post') && !$result->isValid()) {
+            $this->Flash->error(__('Invalid username or password'));
         }
     }
 
     public function logout()
     {
-        $this->Flash->success('You are now logged out.');
-        return $this->redirect($this->Auth->logout());
+        $result = $this->Authentication->getResult();
+        // regardless of POST or GET, redirect if user is logged in
+        if ($result->isValid()) {
+            $this->Authentication->logout();
+            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+        }
     }
 
     /**
