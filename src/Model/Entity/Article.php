@@ -15,8 +15,8 @@ class Article extends Entity
 
     protected function _getTagString()
     {
-        if (isset($this->_properties['tag_string'])) {
-            return $this->_properties['tag_string'];
+        if (isset($this->_fields['tag_string'])) {
+            return $this->_fields['tag_string'];
         }
         if (empty($this->tags)) {
             return '';

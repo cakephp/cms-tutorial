@@ -2,6 +2,7 @@
 // src/Model/Table/ArticlesTable.php
 namespace App\Model\Table;
 
+use Cake\Event\EventInterface;
 use Cake\ORM\Table;
 use Cake\ORM\Query;
 use Cake\Utility\Text;
@@ -9,13 +10,16 @@ use Cake\Validation\Validator;
 
 class ArticlesTable extends Table
 {
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         $this->addBehavior('Timestamp');
-        $this->belongsToMany('Tags');
+        $this->belongsToMany('Tags', [
+            'joinTable' => 'articles_tags',
+            'dependent' => true
+        ]);
     }
 
-    public function beforeSave($event, $entity, $options)
+    public function beforeSave(EventInterface $event, $entity, $options)
     {
         if ($entity->isNew() && !$entity->slug) {
             $sluggedTitle = Text::slug($entity->title);
@@ -23,11 +27,6 @@ class ArticlesTable extends Table
             $entity->slug = substr($sluggedTitle, 0, 191);
         }
 
-        // This is temporary, and will be removed later
-        // when we build authentication out.
-        if (!$entity->user_id) {
-            $entity->user_id = 1;
-        }
 
         if ($entity->tag_string) {
             $entity->tags = $this->_buildTags($entity->tag_string);
@@ -54,7 +53,6 @@ class ArticlesTable extends Table
                 unset($newTags[$index]);
             }
         }
-        debug($newTags);
         // Add existing tags.
         foreach ($query as $tag) {
             $out[] = $tag;
@@ -66,7 +64,7 @@ class ArticlesTable extends Table
         return $out;
     }
 
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): \Cake\Validation\Validator
     {
         $validator
             ->notEmpty('title')
