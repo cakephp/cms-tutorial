@@ -1,4 +1,4 @@
-<!-- File: src/Template/Articles/view.ctp -->
+<!-- File: src/Template/Articles/view.php -->
 
 <h1><?= h($article->title) ?></h1>
 <p><?= h($article->body) ?></p>

@@ -1,4 +1,4 @@
-<!-- File: src/Template/Articles/index.ctp -->
+<!-- File: src/Template/Articles/index.php -->
 <?= $this->Html->link('Add Article', ['action' => 'add']) ?>
 <h1>Articles</h1>
 <table>
