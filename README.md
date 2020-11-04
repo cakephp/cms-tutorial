@@ -15,5 +15,5 @@ composer install
 
 ## Configuration
 
-Copy `config/app.default.php` to  `config/app.php` and setup the `'Datasources'` configuration.
+Update the `'Datasources'` configuration in `config/app.php` for your local database.
 You'll also need to create a database and run the SQL located in the tutorial.
