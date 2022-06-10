@@ -50,7 +50,7 @@ class TagsController extends AppController
      */
     public function add()
     {
-        $tag = $this->Tags->newEntity();
+        $tag = $this->Tags->newEmptyEntity();
         if ($this->request->is('post')) {
             $tag = $this->Tags->patchEntity($tag, $this->request->getData());
             if ($this->Tags->save($tag)) {
