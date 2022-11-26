@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use Cake\ORM\Query;
@@ -9,21 +11,26 @@ use Cake\Validation\Validator;
 /**
  * Tags Model
  *
- * @property \App\Model\Table\ArticlesTable|\Cake\ORM\Association\BelongsToMany $Articles
+ * @property \App\Model\Table\ArticlesTable&\Cake\ORM\Association\BelongsToMany $Articles
  *
- * @method \App\Model\Entity\Tag get($primaryKey, $options = [])
- * @method \App\Model\Entity\Tag newEntity($data = null, array $options = [])
+ * @method \App\Model\Entity\Tag newEmptyEntity()
+ * @method \App\Model\Entity\Tag newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Tag[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Tag|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\Tag get($primaryKey, $options = [])
+ * @method \App\Model\Entity\Tag findOrCreate($search, ?callable $callback = null, $options = [])
  * @method \App\Model\Entity\Tag patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \App\Model\Entity\Tag[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Tag findOrCreate($search, callable $callback = null, $options = [])
+ * @method \App\Model\Entity\Tag[] patchEntities(iterable $entities, array $data, array $options = [])
+ * @method \App\Model\Entity\Tag|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\Tag saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\Tag[]|\Cake\Datasource\ResultSetInterface|false saveMany(iterable $entities, $options = [])
+ * @method \App\Model\Entity\Tag[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
+ * @method \App\Model\Entity\Tag[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
+ * @method \App\Model\Entity\Tag[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class TagsTable extends Table
 {
-
     /**
      * Initialize method
      *
@@ -43,7 +50,7 @@ class TagsTable extends Table
         $this->belongsToMany('Articles', [
             'foreignKey' => 'tag_id',
             'targetForeignKey' => 'article_id',
-            'joinTable' => 'articles_tags'
+            'joinTable' => 'articles_tags',
         ]);
     }
 
@@ -53,15 +60,16 @@ class TagsTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator): \Cake\Validation\Validator
+    public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', null, 'create');
 
         $validator
             ->scalar('title')
-            ->allowEmpty('title')
+            ->maxLength('title', 191)
+            ->allowEmptyString('title')
             ->add('title', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
 
         return $validator;
@@ -76,7 +84,7 @@ class TagsTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['title']));
+        $rules->add($rules->isUnique(['title']), ['errorField' => 'title']);
 
         return $rules;
     }

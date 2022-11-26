@@ -1,56 +1,52 @@
 <?php
-namespace App\Controller;
+declare(strict_types=1);
 
-use App\Controller\AppController;
+namespace App\Controller;
 
 /**
  * Tags Controller
  *
  * @property \App\Model\Table\TagsTable $Tags
- *
- * @method \App\Model\Entity\Tag[] paginate($object = null, array $settings = [])
+ * @method \App\Model\Entity\Tag[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class TagsController extends AppController
 {
-
     /**
      * Index method
      *
-     * @return \Cake\Http\Response|void
+     * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
         $tags = $this->paginate($this->Tags);
 
         $this->set(compact('tags'));
-        $this->set('_serialize', ['tags']);
     }
 
     /**
      * View method
      *
      * @param string|null $id Tag id.
-     * @return \Cake\Http\Response|void
+     * @return \Cake\Http\Response|null|void Renders view
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null)
     {
         $tag = $this->Tags->get($id, [
-            'contain' => ['Articles']
+            'contain' => ['Articles'],
         ]);
 
-        $this->set('tag', $tag);
-        $this->set('_serialize', ['tag']);
+        $this->set(compact('tag'));
     }
 
     /**
      * Add method
      *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
     public function add()
     {
-        $tag = $this->Tags->newEntity();
+        $tag = $this->Tags->newEmptyEntity();
         if ($this->request->is('post')) {
             $tag = $this->Tags->patchEntity($tag, $this->request->getData());
             if ($this->Tags->save($tag)) {
@@ -62,20 +58,19 @@ class TagsController extends AppController
         }
         $articles = $this->Tags->Articles->find('list', ['limit' => 200]);
         $this->set(compact('tag', 'articles'));
-        $this->set('_serialize', ['tag']);
     }
 
     /**
      * Edit method
      *
      * @param string|null $id Tag id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function edit($id = null)
     {
         $tag = $this->Tags->get($id, [
-            'contain' => ['Articles']
+            'contain' => ['Articles'],
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $tag = $this->Tags->patchEntity($tag, $this->request->getData());
@@ -88,14 +83,13 @@ class TagsController extends AppController
         }
         $articles = $this->Tags->Articles->find('list', ['limit' => 200]);
         $this->set(compact('tag', 'articles'));
-        $this->set('_serialize', ['tag']);
     }
 
     /**
      * Delete method
      *
      * @param string|null $id Tag id.
-     * @return \Cake\Http\Response|null Redirects to index.
+     * @return \Cake\Http\Response|null|void Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function delete($id = null)
