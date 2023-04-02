@@ -189,9 +189,9 @@ $cakeDescription = 'CakePHP: the rapid development PHP framework';
                     <div class="column links">
                         <h3>Help and Bug Reports</h3>
                         <a target="_blank" href="irc://irc.freenode.net/cakephp">irc.freenode.net #cakephp</a>
-                        <a target="_blank" href="http://cakesf.herokuapp.com/">Slack</a>
+                        <a target="_blank" href="https://cakesf.herokuapp.com/">Slack</a>
                         <a target="_blank" href="https://github.com/cakephp/cakephp/issues">CakePHP Issues</a>
-                        <a target="_blank" href="http://discourse.cakephp.org/">CakePHP Forum</a>
+                        <a target="_blank" href="https://discourse.cakephp.org/">CakePHP Forum</a>
                     </div>
                 </div>
                 <hr>
