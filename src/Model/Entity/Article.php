@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
+use Cake\Utility\Text;
 
 /**
  * Article Entity
@@ -42,4 +43,11 @@ class Article extends Entity
         'user' => true,
         'tags' => true,
     ];
+
+    protected function _setTitle(string $title): string
+    {
+        $this->slug = Text::slug($title);
+
+        return $title;
+    }
 }
