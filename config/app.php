@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use Cake\Cache\Engine\FileEngine;
 use Cake\Database\Connection;
@@ -6,6 +7,7 @@ use Cake\Database\Driver\Mysql;
 use Cake\Error\ExceptionRenderer;
 use Cake\Log\Engine\FileLog;
 use Cake\Mailer\Transport\MailTransport;
+use function Cake\Core\env;
 
 return [
     /*
@@ -17,7 +19,7 @@ return [
      * Development Mode:
      * true: Errors and warnings shown.
      */
-    'debug' => filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN),
+    'debug' => true, //filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN),
 
     /*
      * Configure basic information about the application.

@@ -64,8 +64,6 @@ class Application extends BaseApplication
         }
         $this->addPlugin('Authentication');
         $this->addPlugin('Authorization');
-
-        // Load more plugins here
     }
 
     /**
@@ -114,13 +112,7 @@ class Application extends BaseApplication
             ->add(new AuthorizationMiddleware($this));
 
         if (Configure::read('debug')) {
-            // Disable authz for debugkit
-            $middlewareQueue->add(function ($req, $res, $next) {
-                if ($req->getParam('plugin') === 'DebugKit') {
-                    $req->getAttribute('authorization')->skipAuthorization();
-                }
-                return $next($req, $res);
-            });
+            Configure::write('DebugKit.ignoreAuthorization', true);
         }
 
         return $middlewareQueue;

@@ -24,16 +24,6 @@ use Cake\Event\Event;
 class ErrorController extends AppController
 {
     /**
-     * Initialization hook method.
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        $this->loadComponent('RequestHandler');
-    }
-
-    /**
      * beforeFilter callback.
      *
      * @param \Cake\Event\Event $event Event.

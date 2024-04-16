@@ -21,7 +21,7 @@ class TagsControllerTest extends TestCase
      *
      * @var array
      */
-    protected $fixtures = [
+    protected array $fixtures = [
         'app.Tags',
         'app.Articles',
         'app.ArticlesTags',

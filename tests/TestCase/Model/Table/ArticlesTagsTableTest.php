@@ -3,20 +3,20 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\TagsTable;
+use App\Model\Table\ArticlesTagsTable;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\TagsTable Test Case
+ * App\Model\Table\ArticlesTagsTable Test Case
  */
-class TagsTableTest extends TestCase
+class ArticlesTagsTableTest extends TestCase
 {
     /**
      * Test subject
      *
-     * @var \App\Model\Table\TagsTable
+     * @var \App\Model\Table\ArticlesTagsTable
      */
-    protected $Tags;
+    protected $ArticlesTags;
 
     /**
      * Fixtures
@@ -24,8 +24,9 @@ class TagsTableTest extends TestCase
      * @var array
      */
     protected array $fixtures = [
-        'app.Tags',
+        'app.ArticlesTags',
         'app.Articles',
+        'app.Tags',
     ];
 
     /**
@@ -36,8 +37,8 @@ class TagsTableTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $config = $this->getTableLocator()->exists('Tags') ? [] : ['className' => TagsTable::class];
-        $this->Tags = $this->getTableLocator()->get('Tags', $config);
+        $config = $this->getTableLocator()->exists('ArticlesTags') ? [] : ['className' => ArticlesTagsTable::class];
+        $this->ArticlesTags = $this->getTableLocator()->get('ArticlesTags', $config);
     }
 
     /**
@@ -47,19 +48,9 @@ class TagsTableTest extends TestCase
      */
     public function tearDown(): void
     {
-        unset($this->Tags);
+        unset($this->ArticlesTags);
 
         parent::tearDown();
-    }
-
-    /**
-     * Test validationDefault method
-     *
-     * @return void
-     */
-    public function testValidationDefault(): void
-    {
-        $this->markTestIncomplete('Not implemented yet.');
     }
 
     /**
