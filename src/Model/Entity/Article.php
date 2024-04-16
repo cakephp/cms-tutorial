@@ -14,8 +14,8 @@ use Cake\ORM\Entity;
  * @property string $slug
  * @property string|null $body
  * @property bool|null $published
- * @property \Cake\I18n\FrozenTime|null $created
- * @property \Cake\I18n\FrozenTime|null $modified
+ * @property \Cake\I18n\DateTime|null $created
+ * @property \Cake\I18n\DateTime|null $modified
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Tag[] $tags
@@ -31,7 +31,7 @@ class Article extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'user_id' => true,
         'title' => true,
         'slug' => true,

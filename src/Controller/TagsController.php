@@ -32,9 +32,7 @@ class TagsController extends AppController
      */
     public function view($id = null)
     {
-        $tag = $this->Tags->get($id, [
-            'contain' => ['Articles'],
-        ]);
+        $tag = $this->Tags->get($id, contain: ['Articles']);
 
         $this->set(compact('tag'));
     }
@@ -69,9 +67,7 @@ class TagsController extends AppController
      */
     public function edit($id = null)
     {
-        $tag = $this->Tags->get($id, [
-            'contain' => ['Articles'],
-        ]);
+        $tag = $this->Tags->get($id, contain: ['Articles']);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $tag = $this->Tags->patchEntity($tag, $this->request->getData());
             if ($this->Tags->save($tag)) {

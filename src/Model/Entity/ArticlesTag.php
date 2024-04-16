@@ -25,7 +25,7 @@ class ArticlesTag extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         'article' => true,
         'tag' => true,
     ];
