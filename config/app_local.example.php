@@ -39,7 +39,10 @@ return [
      */
     'Datasources' => [
         'default' => [
-            'url' => env('DATABASE_URL', 'sqlite://127.0.0.1/cms-tutorial-database.sqlite'),
+            'driver' => Cake\Database\Driver\Sqlite::class,
+            'database' => ROOT . DS . 'cms-tutorial-database.sqlite',
+            'encoding' => 'utf8',
+            'url' => env('DATABASE_URL'),
         ],
 
         /*
