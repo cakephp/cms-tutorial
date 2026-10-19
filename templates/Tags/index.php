@@ -1,7 +1,7 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var \App\Model\Entity\Tag[]|\Cake\Collection\CollectionInterface $tags
+ * @var iterable<\App\Model\Entity\Tag> $tags
  */
 ?>
 <div class="tags index content">
@@ -28,7 +28,6 @@
                     <td class="actions">
                         <?= $this->Html->link(__('View'), ['action' => 'view', $tag->id]) ?>
                         <?= $this->Html->link(__('Edit'), ['action' => 'edit', $tag->id]) ?>
-                        <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $tag->id], ['confirm' => __('Are you sure you want to delete # {0}?', $tag->id)]) ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>

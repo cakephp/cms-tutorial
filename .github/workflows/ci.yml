@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testsuite:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php-version: '8.2'
+            dependencies: 'highest'
+          - php-version: '8.3'
+            dependencies: 'highest'
+          - php-version: '8.4'
+            dependencies: 'highest'
+          - php-version: '8.5'
+            dependencies: 'highest'
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, intl, pdo_sqlite
+        ini-values: zend.assertions=1
+        coverage: none
+
+    - name: Composer install
+      uses: ramsey/composer-install@v4
+      with:
+        dependency-versions: ${{ matrix.dependencies }}
+        composer-options: ${{ matrix.composer-options }}
+
+    - name: Composer post install
+      run: composer run-script post-install-cmd --no-interaction
+
+    - name: Run PHPUnit
+      run: vendor/bin/phpunit
+      env:
+        DATABASE_TEST_URL: sqlite://./testdb.sqlite
+
+  coding-standard:
+    name: Coding Standard & Static Analysis
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.5'
+        extensions: mbstring, intl
+        coverage: none
+        tools: cs2pr
+
+    - name: Composer install
+      uses: ramsey/composer-install@v4
+
+    - name: Run PHP CodeSniffer
+      run: vendor/bin/phpcs --report=checkstyle | cs2pr
+
+    - name: Run phpstan
+      if: always()
+      run: vendor/bin/phpstan analyse --no-progress
+      env:
+        SECURITY_SALT: f76f1c8475585c46c6acd3ddcb8f5e0f15de524637bb4080a08c4afe7cfc9144

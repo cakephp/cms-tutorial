@@ -3,14 +3,13 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
-use App\Controller\TagsController;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
 /**
  * App\Controller\TagsController Test Case
  *
- * @uses \App\Controller\TagsController
+ * @link \App\Controller\TagsController
  */
 class TagsControllerTest extends TestCase
 {
@@ -19,11 +18,12 @@ class TagsControllerTest extends TestCase
     /**
      * Fixtures
      *
-     * @var array
+     * @var array<string>
      */
     protected array $fixtures = [
-        'app.Tags',
+        'app.Users',
         'app.Articles',
+        'app.Tags',
         'app.ArticlesTags',
     ];
 
@@ -34,7 +34,10 @@ class TagsControllerTest extends TestCase
      */
     public function testIndex(): void
     {
-        $this->markTestIncomplete('Not implemented yet.');
+        $this->get('/tags');
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('CakePHP');
     }
 
     /**
@@ -44,7 +47,69 @@ class TagsControllerTest extends TestCase
      */
     public function testView(): void
     {
-        $this->markTestIncomplete('Not implemented yet.');
+        $this->get('/tags/view/1');
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('First Article');
+        // The articles are found by their slug.
+        $this->assertResponseContains('/articles/view/First-Article');
+    }
+
+    /**
+     * Test view method with an unknown or invalid id
+     *
+     * @return void
+     */
+    public function testViewNotFound(): void
+    {
+        $this->get('/tags/view/999');
+        $this->assertResponseCode(404);
+
+        $this->get('/tags/view/abc');
+        $this->assertResponseCode(404);
+    }
+
+    /**
+     * Test that a tag title cannot be used twice
+     *
+     * @return void
+     */
+    public function testAddDuplicatedTag(): void
+    {
+        $this->session(['Auth' => ['id' => 1, 'email' => 'alice@example.com']]);
+        $this->enableCsrfToken();
+
+        $this->post('/tags/add', ['title' => 'PHP']);
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('This tag already exists.');
+    }
+
+    /**
+     * Test that the tags list does not offer the delete link, nobody can delete tags
+     *
+     * @return void
+     */
+    public function testIndexHasNoDeleteLink(): void
+    {
+        $this->session(['Auth' => ['id' => 1, 'email' => 'alice@example.com']]);
+
+        $this->get('/tags');
+
+        $this->assertResponseOk();
+        $this->assertResponseNotContains('/tags/delete/');
+    }
+
+    /**
+     * Test add method requires a logged in user
+     *
+     * @return void
+     */
+    public function testAddRequiresLogin(): void
+    {
+        $this->get('/tags/add');
+
+        $this->assertRedirectContains('/users/login');
     }
 
     /**
@@ -54,26 +119,49 @@ class TagsControllerTest extends TestCase
      */
     public function testAdd(): void
     {
-        $this->markTestIncomplete('Not implemented yet.');
+        $this->session(['Auth' => ['id' => 1, 'email' => 'alice@example.com']]);
+        $this->enableCsrfToken();
+
+        $this->post('/tags/add', ['title' => 'Testing']);
+
+        $this->assertRedirect(['controller' => 'Tags', 'action' => 'index']);
+        $this->assertTrue($this->getTableLocator()->get('Tags')->exists(['title' => 'Testing']));
     }
 
     /**
-     * Test edit method
+     * Test that editing a tag cannot change the articles, they belong to their authors
      *
      * @return void
      */
-    public function testEdit(): void
+    public function testEditCannotChangeTheArticles(): void
     {
-        $this->markTestIncomplete('Not implemented yet.');
+        $this->session(['Auth' => ['id' => 2, 'email' => 'bob@example.com']]);
+        $this->enableCsrfToken();
+
+        $this->get('/tags/edit/2');
+        $this->assertResponseOk();
+        $this->assertResponseNotContains('articles[_ids]');
+
+        $this->put('/tags/edit/2', ['title' => 'PHP', 'articles' => ['_ids' => [2]]]);
+
+        $this->assertRedirect(['controller' => 'Tags', 'action' => 'index']);
+        $articles = $this->getTableLocator()->get('Tags')->get(2, contain: ['Articles'])->articles;
+        $this->assertSame([1], array_column($articles, 'id'), 'Only the first article keeps the tag.');
     }
 
     /**
-     * Test delete method
+     * Test delete method, which nobody is allowed to do
      *
      * @return void
      */
-    public function testDelete(): void
+    public function testDeleteIsForbidden(): void
     {
-        $this->markTestIncomplete('Not implemented yet.');
+        $this->session(['Auth' => ['id' => 1, 'email' => 'alice@example.com']]);
+        $this->enableCsrfToken();
+
+        $this->delete('/tags/delete/1');
+
+        $this->assertResponseCode(403);
+        $this->assertTrue($this->getTableLocator()->get('Tags')->exists(['id' => 1]));
     }
 }

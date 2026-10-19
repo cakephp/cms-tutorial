@@ -24,12 +24,11 @@ class Tag extends Entity
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected array $_accessible = [
         'title' => true,
         'created' => true,
         'modified' => true,
-        'articles' => true,
     ];
 }

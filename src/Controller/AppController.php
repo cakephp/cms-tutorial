@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -15,7 +17,6 @@
 namespace App\Controller;
 
 use Cake\Controller\Controller;
-use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -23,33 +24,33 @@ use Cake\Event\EventInterface;
  * Add your application-wide methods in the class below, your controllers
  * will inherit them.
  *
- * @link https://book.cakephp.org/3.0/en/controllers.html#the-app-controller
+ * @link https://book.cakephp.org/5/en/controllers.html#the-app-controller
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class AppController extends Controller
 {
-
     /**
      * Initialization hook method.
      *
      * Use this method to add common initialization code like loading components.
      *
-     * e.g. `$this->loadComponent('Security');`
+     * e.g. `$this->loadComponent('FormProtection');`
      *
      * @return void
      */
     public function initialize(): void
     {
         parent::initialize();
+
         $this->loadComponent('Flash');
         $this->loadComponent('Authentication.Authentication');
         $this->loadComponent('Authorization.Authorization');
-    }
 
-    public function beforeFilter(EventInterface $event)
-    {
-        parent::beforeFilter($event);
-        // for all controllers in our application, make index and view
-        // actions public, skipping the authentication check
-        $this->Authentication->addUnauthenticatedActions(['index', 'view']);
+        /*
+         * Enable the following component for recommended CakePHP form protection settings.
+         * see https://book.cakephp.org/5/en/controllers/components/form-protection.html
+         */
+        //$this->loadComponent('FormProtection');
     }
 }

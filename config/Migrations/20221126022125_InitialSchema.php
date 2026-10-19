@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
-class InitialSchema extends AbstractMigration
+class InitialSchema extends BaseMigration
 {
     /**
      * Up Method.
      *
      * More information on this method is available here:
-     * https://book.cakephp.org/phinx/0/en/migrations.html#the-up-method
+     * https://book.cakephp.org/migrations/5/en/writing-migrations.html
      * @return void
      */
     public function up()
@@ -19,7 +19,6 @@ class InitialSchema extends AbstractMigration
                 'default' => null,
                 'limit' => null,
                 'null' => false,
-                'signed' => false,
             ])
             ->addColumn('title', 'string', [
                 'default' => null,
@@ -69,13 +68,11 @@ class InitialSchema extends AbstractMigration
                 'default' => null,
                 'limit' => null,
                 'null' => false,
-                'signed' => false,
             ])
             ->addColumn('tag_id', 'integer', [
                 'default' => null,
                 'limit' => null,
                 'null' => false,
-                'signed' => false,
             ])
             ->addIndex(
                 [

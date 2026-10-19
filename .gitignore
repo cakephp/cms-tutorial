@@ -36,3 +36,4 @@ nbproject/* # NetBeans
 config/Migrations/schema-dump-default.lock
 database
 cms-tutorial-database.sqlite
+/.phpunit.cache/

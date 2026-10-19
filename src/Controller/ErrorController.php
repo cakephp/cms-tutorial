@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -14,7 +16,7 @@
  */
 namespace App\Controller;
 
-use Cake\Event\Event;
+use Cake\Event\EventInterface;
 
 /**
  * Error Handling Controller
@@ -24,22 +26,32 @@ use Cake\Event\Event;
 class ErrorController extends AppController
 {
     /**
+     * Initialization hook method.
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        // Only add parent::initialize() if you are confident your `AppController` is safe.
+    }
+
+    /**
      * beforeFilter callback.
      *
-     * @param \Cake\Event\Event $event Event.
-     * @return \Cake\Http\Response|null|void
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event Event.
+     * @return void
      */
-    public function beforeFilter(\Cake\Event\EventInterface $event)
+    public function beforeFilter(EventInterface $event): void
     {
     }
 
     /**
      * beforeRender callback.
      *
-     * @param \Cake\Event\Event $event Event.
-     * @return \Cake\Http\Response|null|void
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event Event.
+     * @return void
      */
-    public function beforeRender(\Cake\Event\EventInterface $event)
+    public function beforeRender(EventInterface $event): void
     {
         parent::beforeRender($event);
 
@@ -49,10 +61,10 @@ class ErrorController extends AppController
     /**
      * afterFilter callback.
      *
-     * @param \Cake\Event\Event $event Event.
-     * @return \Cake\Http\Response|null|void
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event Event.
+     * @return void
      */
-    public function afterFilter(\Cake\Event\EventInterface $event)
+    public function afterFilter(EventInterface $event): void
     {
     }
 }

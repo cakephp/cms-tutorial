@@ -20,7 +20,9 @@ if (!defined('STDIN')) {
     define('STDIN', fopen('php://stdin', 'r'));
 }
 
+use Cake\Codeception\Console\Installer as CodeceptionInstaller;
 use Cake\Utility\Security;
+use Composer\IO\IOInterface;
 use Composer\Script\Event;
 use Exception;
 
@@ -32,6 +34,8 @@ class Installer
 {
     /**
      * An array of directories to be made writable
+     *
+     * @var list<string>
      */
     public const WRITABLE_DIRS = [
         'logs',
@@ -51,11 +55,11 @@ class Installer
      * @throws \Exception Exception raised by validator.
      * @return void
      */
-    public static function postInstall(Event $event)
+    public static function postInstall(Event $event): void
     {
         $io = $event->getIO();
 
-        $rootDir = dirname(dirname(__DIR__));
+        $rootDir = dirname(__DIR__, 2);
 
         static::createAppLocalConfig($rootDir, $io);
         static::createWritableDirectories($rootDir, $io);
@@ -63,9 +67,8 @@ class Installer
         static::setFolderPermissions($rootDir, $io);
         static::setSecuritySalt($rootDir, $io);
 
-        $class = 'Cake\Codeception\Console\Installer';
-        if (class_exists($class)) {
-            $class::customizeCodeceptionBinary($event);
+        if (class_exists(CodeceptionInstaller::class)) {
+            CodeceptionInstaller::customizeCodeceptionBinary($event);
         }
     }
 
@@ -76,7 +79,7 @@ class Installer
      * @param \Composer\IO\IOInterface $io IO interface to write to console.
      * @return void
      */
-    public static function createAppLocalConfig($dir, $io)
+    public static function createAppLocalConfig(string $dir, IOInterface $io): void
     {
         $appLocalConfig = $dir . '/config/app_local.php';
         $appLocalConfigTemplate = $dir . '/config/app_local.example.php';
@@ -93,7 +96,7 @@ class Installer
      * @param \Composer\IO\IOInterface $io IO interface to write to console.
      * @return void
      */
-    public static function createWritableDirectories($dir, $io)
+    public static function createWritableDirectories(string $dir, IOInterface $io): void
     {
         foreach (static::WRITABLE_DIRS as $path) {
             $path = $dir . '/' . $path;
@@ -113,11 +116,11 @@ class Installer
      * @param \Composer\IO\IOInterface $io IO interface to write to console.
      * @return void
      */
-    public static function setFolderPermissions($dir, $io)
+    public static function setFolderPermissions(string $dir, IOInterface $io): void
     {
         // ask if the permissions should be changed
         if ($io->isInteractive()) {
-            $validator = function ($arg) {
+            $validator = function (string $arg): string {
                 if (in_array($arg, ['Y', 'y', 'N', 'n'])) {
                     return $arg;
                 }
@@ -127,7 +130,7 @@ class Installer
                 '<info>Set Folder Permissions ? (Default to Y)</info> [<comment>Y,n</comment>]? ',
                 $validator,
                 10,
-                'Y'
+                'Y',
             );
 
             if (in_array($setFolderPermissions, ['n', 'N'])) {
@@ -136,7 +139,7 @@ class Installer
         }
 
         // Change the permissions on a path and output the results.
-        $changePerms = function ($path) use ($io) {
+        $changePerms = function (string $path) use ($io): void {
             $currentPerms = fileperms($path) & 0777;
             $worldWritable = $currentPerms | 0007;
             if ($worldWritable == $currentPerms) {
@@ -151,8 +154,8 @@ class Installer
             }
         };
 
-        $walker = function ($dir) use (&$walker, $changePerms) {
-            $files = array_diff(scandir($dir), ['.', '..']);
+        $walker = function (string $dir) use (&$walker, $changePerms): void {
+            $files = array_diff(scandir($dir) ?: [], ['.', '..']);
             foreach ($files as $file) {
                 $path = $dir . '/' . $file;
 
@@ -177,7 +180,7 @@ class Installer
      * @param \Composer\IO\IOInterface $io IO interface to write to console.
      * @return void
      */
-    public static function setSecuritySalt($dir, $io)
+    public static function setSecuritySalt(string $dir, IOInterface $io): void
     {
         $newKey = hash('sha256', Security::randomBytes(64));
         static::setSecuritySaltInFile($dir, $io, $newKey, 'app_local.php');
@@ -192,10 +195,15 @@ class Installer
      * @param string $file A path to a file relative to the application's root
      * @return void
      */
-    public static function setSecuritySaltInFile($dir, $io, $newKey, $file)
+    public static function setSecuritySaltInFile(string $dir, IOInterface $io, string $newKey, string $file): void
     {
         $config = $dir . '/config/' . $file;
         $content = file_get_contents($config);
+        if ($content === false) {
+            $io->write('Config file not readable or not found: config/' . $file);
+
+            return;
+        }
 
         $content = str_replace('__SALT__', $newKey, $content, $count);
 
@@ -223,10 +231,16 @@ class Installer
      * @param string $file A path to a file relative to the application's root
      * @return void
      */
-    public static function setAppNameInFile($dir, $io, $appName, $file)
+    public static function setAppNameInFile(string $dir, IOInterface $io, string $appName, string $file): void
     {
         $config = $dir . '/config/' . $file;
         $content = file_get_contents($config);
+        if ($content === false) {
+            $io->write('Config file not readable or not found: config/' . $file);
+
+            return;
+        }
+
         $content = str_replace('__APP_NAME__', $appName, $content, $count);
 
         if ($count == 0) {

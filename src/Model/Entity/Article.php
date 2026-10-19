@@ -21,6 +21,7 @@ use Cake\Utility\Text;
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Tag[] $tags
+ * @property string $tag_string
  */
 class Article extends Entity
 {
@@ -31,12 +32,12 @@ class Article extends Entity
      * be mass assigned. For security purposes, it is advised to set '*' to false
      * (or remove it), and explicitly make individual fields accessible as needed.
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected array $_accessible = [
         'user_id' => true,
         'title' => true,
-        'slug' => true,
+        'slug' => false,
         'body' => true,
         'published' => true,
         'created' => true,
@@ -46,6 +47,12 @@ class Article extends Entity
         'tag_string' => true,
     ];
 
+    /**
+     * Sets the slug every time the title is set.
+     *
+     * @param string $title The article title.
+     * @return string
+     */
     protected function _setTitle(string $title): string
     {
         $this->slug = Text::slug($title);
@@ -53,6 +60,11 @@ class Article extends Entity
         return $title;
     }
 
+    /**
+     * Virtual field with the article tags as a comma separated string.
+     *
+     * @return string
+     */
     protected function _getTagString(): string
     {
         if (isset($this->_fields['tag_string'])) {
@@ -61,11 +73,7 @@ class Article extends Entity
         if (empty($this->tags)) {
             return '';
         }
-        $tags = new Collection($this->tags);
-        $str = $tags->reduce(function ($string, $tag) {
-            return $string . $tag->title . ', ';
-        }, '');
 
-        return trim($str, ', ');
+        return (new Collection($this->tags))->extract('title')->implode(', ');
     }
 }

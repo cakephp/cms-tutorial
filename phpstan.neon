@@ -1,0 +1,22 @@
+parameters:
+	level: 8
+	treatPhpDocTypesAsCertain: false
+	bootstrapFiles:
+		- config/bootstrap.php
+	paths:
+		- src/
+	ignoreErrors:
+		# Cake classes use generics that are not worth repeating in the app code.
+		-
+			identifier: missingType.generics
+		# The associations in the baked table docblocks are not resolved by PHPStan.
+		-
+			identifier: propertyTag.unresolvableType
+			path: src/Model/Table/*
+		-
+			identifier: missingType.iterableValue
+			path: src/Model/Table/*
+		# The base class is not generic.
+		-
+			identifier: generics.notGeneric
+			path: src/Application.php

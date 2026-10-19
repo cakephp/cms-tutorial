@@ -1,90 +1,60 @@
 <?php
-namespace App\Controller;
+declare(strict_types=1);
 
-use App\Controller\AppController;
-use Cake\Event\EventInterface;
+namespace App\Controller;
 
 /**
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
- *
- * @method \App\Model\Entity\User[] paginate($object = null, array $settings = [])
  */
 class UsersController extends AppController
 {
-    public function beforeFilter(EventInterface $event)
+    /**
+     * Initialize controller
+     *
+     * @return void
+     */
+    public function initialize(): void
     {
-        parent::beforeFilter($event);
-        // Allow login and add
-        $this->Authentication->addUnauthenticatedActions(['login', 'add']);
+        parent::initialize();
+
+        // Anyone can sign up and log in.
+        $this->Authentication->allowUnauthenticated(['login', 'add']);
     }
 
     /**
      * Index method
      *
-     * @return \Cake\Http\Response|void
+     * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
-        $users = $this->paginate($this->Users);
+        $query = $this->Users->find();
+        $query = $this->Authorization->applyScope($query);
+        $users = $this->paginate($query);
 
         $this->set(compact('users'));
-        $this->set('_serialize', ['users']);
-    }
-
-    public function login() {
-        $this->Authorization->skipAuthorization();
-
-        $this->request->allowMethod(['get', 'post']);
-        $result = $this->Authentication->getResult();
-        // regardless of POST or GET, redirect if user is logged in
-        if ($result->isValid()) {
-            // redirect to /articles after login success
-            $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Articles',
-                'action' => 'index',
-            ]);
-
-            return $this->redirect($redirect);
-        }
-        // display error if user submitted and authentication failed
-        if ($this->request->is('post') && !$result->isValid()) {
-            $this->Flash->error(__('Invalid username or password'));
-        }
-    }
-
-    public function logout()
-    {
-        $this->Authorization->skipAuthorization();
-
-        $result = $this->Authentication->getResult();
-        // regardless of POST or GET, redirect if user is logged in
-        if ($result->isValid()) {
-            $this->Authentication->logout();
-            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
-        }
     }
 
     /**
      * View method
      *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|void
+     * @param int $id User id.
+     * @return \Cake\Http\Response|null|void Renders view
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
+    public function view(int $id)
     {
         $user = $this->Users->get($id, contain: ['Articles']);
-
-        $this->set('user', $user);
-        $this->set('_serialize', ['user']);
+        $this->Authorization->authorize($user);
+        $this->set(compact('user'));
     }
 
     /**
      * Add method
      *
-     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
     public function add()
     {
@@ -101,21 +71,26 @@ class UsersController extends AppController
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
         $this->set(compact('user'));
-        $this->set('_serialize', ['user']);
     }
 
     /**
      * Edit method
      *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     * @param int $id User id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function edit($id = null)
+    public function edit(int $id)
     {
         $user = $this->Users->get($id, contain: []);
+        $this->Authorization->authorize($user);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
+            $data = $this->request->getData();
+            // Keep the current password when the field is left empty.
+            if (empty($data['password'])) {
+                unset($data['password']);
+            }
+            $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 
@@ -124,26 +99,69 @@ class UsersController extends AppController
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
         $this->set(compact('user'));
-        $this->set('_serialize', ['user']);
     }
 
     /**
      * Delete method
      *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null Redirects to index.
+     * @param int $id User id.
+     * @return \Cake\Http\Response|null Redirects to the login page, or to the index if it failed.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($id = null)
+    public function delete(int $id)
     {
         $this->request->allowMethod(['post', 'delete']);
         $user = $this->Users->get($id);
+        $this->Authorization->authorize($user);
         if ($this->Users->delete($user)) {
             $this->Flash->success(__('The user has been deleted.'));
-        } else {
-            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+            // Users can only delete themselves, so log them out too.
+            $this->Authentication->logout();
+
+            return $this->redirect(['action' => 'login']);
         }
+        $this->Flash->error(__('The user could not be deleted. Please, try again.'));
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Login method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful login, renders view otherwise.
+     */
+    public function login()
+    {
+        $this->Authorization->skipAuthorization();
+
+        $this->request->allowMethod(['get', 'post']);
+        $result = $this->Authentication->getResult();
+        if ($result?->isValid()) {
+            // redirect to the page the user came from, or to /articles
+            return $this->Authentication->redirectAfterLogin(['controller' => 'Articles', 'action' => 'index']);
+        }
+
+        // display error if user submitted and authentication failed
+        if ($this->request->is('post')) {
+            $this->Flash->error(__('Invalid username or password'));
+        }
+    }
+
+    /**
+     * Logout method
+     *
+     * @return \Cake\Http\Response|null|void Redirects to the login page.
+     */
+    public function logout()
+    {
+        $this->Authorization->skipAuthorization();
+
+        $result = $this->Authentication->getResult();
+        // regardless of POST or GET, redirect if user is logged in
+        if ($result?->isValid()) {
+            $this->Authentication->logout();
+
+            return $this->redirect(['action' => 'login']);
+        }
     }
 }

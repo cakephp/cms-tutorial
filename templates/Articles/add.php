@@ -1,6 +1,11 @@
-<!-- File: src/Template/Articles/add.php -->
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Article $article
+ */
+?>
 
-<h1>Add Article</h1>
+<h1><?= __('Add Article') ?></h1>
 <?php
     echo $this->Form->create($article);
     echo $this->Form->control('title');

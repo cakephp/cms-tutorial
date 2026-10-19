@@ -20,7 +20,7 @@ if (!defined('DS')) {
 }
 
 /*
- * These defines should only be edited if you have cake installed in
+ * These definitions should only be edited if you have cake installed in
  * a directory layout other than the way it is distributed.
  * When using custom settings be sure to use the DS and do not add a trailing DS.
  */
@@ -75,12 +75,12 @@ define('LOGS', ROOT . DS . 'logs' . DS);
  */
 define('CACHE', TMP . 'cache' . DS);
 
-/**
+/*
  * Path to the resources directory.
  */
 define('RESOURCES', ROOT . DS . 'resources' . DS);
 
-/**
+/*
  * The absolute path to the "cake" directory, WITHOUT a trailing DS.
  *
  * CakePHP should always be installed with composer, so look there.

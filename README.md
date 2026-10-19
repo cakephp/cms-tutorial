@@ -3,6 +3,11 @@
 The completed CMS tutorial application created during
 https://book.cakephp.org/5/en/tutorials-and-examples/cms/installation.html
 
+## Requirements
+
+* PHP 8.2 or higher (tested on 8.2, 8.3, 8.4 and 8.5), with the `intl`, `mbstring` and `pdo_sqlite` extensions.
+* [Composer](https://getcomposer.org/doc/00-intro.md).
+
 ## Installation
 
 1. Download [Composer](https://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
@@ -13,6 +18,9 @@ https://book.cakephp.org/5/en/tutorials-and-examples/cms/installation.html
 cd cms-tutorial
 composer install
 ```
+
+Composer also runs the installer, which creates `config/app_local.php` from `config/app_local.example.php`
+and sets the `Security.salt` value.
 
 ## Configuration
 
@@ -36,5 +44,27 @@ bin/cake server
 
 Then point your browser to http://localhost:8765
 
-You will be redirected to the `/users/login` page. This is the behavior we configured to request a valid
-username and password. The CMS Tutorial user Authentication and Authorization to identify the users.
+You will see the list of articles. Adding or editing articles requires a logged in user, so you will be
+redirected to the `/users/login` page, where you can also sign up. The CMS Tutorial uses Authentication and
+Authorization to identify the users and to decide what they can do.
+
+## Production
+
+Set the `APP_FULL_BASE_URL` environment variable (for example `APP_FULL_BASE_URL=https://example.com`)
+or `App.fullBaseUrl` in `config/app_local.php`. With `debug` off, the `HostHeaderMiddleware` rejects the
+requests whose `Host` header does not match it, to prevent Host header injection.
+
+## Permissions
+
+* Anyone can read the articles and the tags, and sign up as a user.
+* Logged in users can add articles, and edit or delete their own articles.
+* Logged in users can add and edit tags, but nobody can delete them.
+* Users can only see, edit or delete their own user.
+
+## Running the tests and the code checks
+
+```bash
+composer test      # phpunit
+composer cs-check  # phpcs, CakePHP coding standard
+composer stan      # phpstan
+```

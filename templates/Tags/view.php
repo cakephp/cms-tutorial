@@ -9,12 +9,11 @@
         <div class="side-nav">
             <h4 class="heading"><?= __('Actions') ?></h4>
             <?= $this->Html->link(__('Edit Tag'), ['action' => 'edit', $tag->id], ['class' => 'side-nav-item']) ?>
-            <?= $this->Form->postLink(__('Delete Tag'), ['action' => 'delete', $tag->id], ['confirm' => __('Are you sure you want to delete # {0}?', $tag->id), 'class' => 'side-nav-item']) ?>
             <?= $this->Html->link(__('List Tags'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
             <?= $this->Html->link(__('New Tag'), ['action' => 'add'], ['class' => 'side-nav-item']) ?>
         </div>
     </aside>
-    <div class="column-responsive column-80">
+    <div class="column column-80">
         <div class="tags view content">
             <h3><?= h($tag->title) ?></h3>
             <table>
@@ -51,20 +50,29 @@
                             <th><?= __('Modified') ?></th>
                             <th class="actions"><?= __('Actions') ?></th>
                         </tr>
-                        <?php foreach ($tag->articles as $articles) : ?>
+                        <?php foreach ($tag->articles as $article) : ?>
                         <tr>
-                            <td><?= h($articles->id) ?></td>
-                            <td><?= h($articles->user_id) ?></td>
-                            <td><?= h($articles->title) ?></td>
-                            <td><?= h($articles->slug) ?></td>
-                            <td><?= h($articles->body) ?></td>
-                            <td><?= h($articles->published) ?></td>
-                            <td><?= h($articles->created) ?></td>
-                            <td><?= h($articles->modified) ?></td>
+                            <td><?= h($article->id) ?></td>
+                            <td><?= h($article->user_id) ?></td>
+                            <td><?= h($article->title) ?></td>
+                            <td><?= h($article->slug) ?></td>
+                            <td><?= h($article->body) ?></td>
+                            <td><?= h($article->published) ?></td>
+                            <td><?= h($article->created) ?></td>
+                            <td><?= h($article->modified) ?></td>
                             <td class="actions">
-                                <?= $this->Html->link(__('View'), ['controller' => 'Articles', 'action' => 'view', $articles->id]) ?>
-                                <?= $this->Html->link(__('Edit'), ['controller' => 'Articles', 'action' => 'edit', $articles->id]) ?>
-                                <?= $this->Form->postLink(__('Delete'), ['controller' => 'Articles', 'action' => 'delete', $articles->id], ['confirm' => __('Are you sure you want to delete # {0}?', $articles->id)]) ?>
+                                <?= $this->Html->link(__('View'), ['controller' => 'Articles', 'action' => 'view', $article->slug]) ?>
+                                <?php if ($this->Identity->is($article->user_id)) : ?>
+                                    <?= $this->Html->link(__('Edit'), ['controller' => 'Articles', 'action' => 'edit', $article->slug]) ?>
+                                    <?= $this->Form->postLink(
+                                        __('Delete'),
+                                        ['controller' => 'Articles', 'action' => 'delete', $article->slug],
+                                        [
+                                            'method' => 'delete',
+                                            'confirm' => __('Are you sure you want to delete # {0}?', $article->title),
+                                        ]
+                                    ) ?>
+                                <?php endif ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
